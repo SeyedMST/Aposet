@@ -34,13 +34,13 @@ class SentenceMatchModelGraph(object):
                 if prediction_mode == 'point_wise':
                     sec_dim = num_classes
                 v = self.input_vector[i]#tf.reshape(self.input_vector[i], [1, tf.shape(self.input_vector[i])[0]])
-                # w = tf.get_variable("w", [input_dim, input_dim],dtype=tf.float32)
-                # b = tf.get_variable("b", [input_dim],dtype=tf.float32)
-                # v = tf.nn.relu(tf.matmul(v, w) + b)
-                # if is_training:
-                #     v = tf.nn.dropout(v, (1 - dropout_rate))
-                # else:
-                #     v = tf.multiply(v, (1 - dropout_rate))
+                w = tf.get_variable("w", [input_dim, input_dim],dtype=tf.float32)
+                b = tf.get_variable("b", [input_dim],dtype=tf.float32)
+                v = tf.nn.relu(tf.matmul(v, w) + b)
+                if is_training:
+                    v = tf.nn.dropout(v, (1 - dropout_rate))
+                else:
+                    v = tf.multiply(v, (1 - dropout_rate))
                 w_1 = tf.get_variable("w_1", [input_dim, sec_dim],dtype=tf.float32)
                 b_1 = tf.get_variable("b_1", [sec_dim],dtype=tf.float32)
                 logits = tf.matmul(v, w_1) + b_1

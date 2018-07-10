@@ -162,6 +162,7 @@ def Get_Next_box_size (index):
                                                                         # map4 2->1
                                                                         # map7 2->1 [same ndcg1, 2layer NN]
                                                                         # map8 2->1 [same map7, 1layer NN]
+                                                                        # map9 same map7
 
 
     #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
@@ -194,7 +195,7 @@ def Get_Next_box_size (index):
 
 def main(_):
 
-    FLAGS.run_id = 'map8'
+    FLAGS.run_id = 'map9'
     log_dir = FLAGS.model_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
