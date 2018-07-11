@@ -183,7 +183,7 @@ def Get_Next_box_size (index):
     FLAGS.dev_path= '../data/' + qa_path +'vali.txt'
     FLAGS.test_path= '../data/'+ qa_path +'test.txt'
     FLAGS.prediction_mode = 'list_wise'
-    FLAGS.iter_count = 20
+    FLAGS.iter_count = 10
     FLAGS.max_epochs = 50
     FLAGS.is_ndcg = False
     FLAGS.loss_type = 'list_net'
@@ -352,6 +352,9 @@ def main(_):
 
             #print (total_loss)
             print ("{}-{}: {}".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
+            output_res_file.write("{}-{}: {}\n".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
+
+
 
 
         print ("{}-{}: {}-{}-{}".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))

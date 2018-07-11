@@ -96,7 +96,7 @@ def wikiQaGenerate(filename, is_training):
         question_dic[question]["answer"].append(input_vector)
         question_dic[question]["label"].append(label)
         all_count += 1
-        if all_count == 50000:
+        if all_count == 100000:
             break
     for key in list(question_dic):
         question_count += 1
@@ -111,7 +111,7 @@ def wikiQaGenerate(filename, is_training):
                 else:
                     l.append(x[i]-min_val[i])
             ll.append(l)
-        question_dic[key]["answer"] = ll
+        #question_dic[key]["answer"] = ll
 
         last_x = -100
         flag_delete = True
