@@ -111,7 +111,9 @@ def wikiQaGenerate(filename, is_training):
                 else:
                     l.append(x[i]-min_val[i])
             ll.append(l)
-        #question_dic[key]["answer"] = ll
+
+        if len (ll[0]) > 100:
+            question_dic[key]["answer"] = ll
 
         last_x = -100
         flag_delete = True

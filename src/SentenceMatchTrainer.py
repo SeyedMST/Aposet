@@ -352,7 +352,7 @@ def main(_):
 
             #print (total_loss)
             print ("{}-{}: {}".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
-            output_res_file.write("{}-{}: {}\n".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
+            #output_res_file.write("{}-{}: {}\n".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
 
 
 
