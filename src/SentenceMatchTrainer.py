@@ -153,6 +153,7 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
 #     return out_string.strip()
 
 
+
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
@@ -221,9 +222,9 @@ def main(_):
 
         devDataStream = SentenceMatchDataStream(dev_path, isShuffle=False, isLoop=True, isSort=True)
 
-        #print('Number of instances in trainDataStream: {}'.format(trainDataStream.get_num_instance()))
-        #print('Number of instances in devDataStream: {}'.format(devDataStream.get_num_instance()))
-        #print('Number of instances in testDataStream: {}'.format(testDataStream.get_num_instance()))
+        print('Number of instances in trainDataStream: {}'.format(trainDataStream.get_num_instance()))
+        print('Number of instances in devDataStream: {}'.format(devDataStream.get_num_instance()))
+        print('Number of instances in testDataStream: {}'.format(testDataStream.get_num_instance()))
         # print('Number of batches in trainDataStream: {}'.format(trainDataStream.get_num_batch()))
         # print('Number of batches in devDataStream: {}'.format(devDataStream.get_num_batch()))
         # print('Number of batches in testDataStream: {}'.format(testDataStream.get_num_batch()))

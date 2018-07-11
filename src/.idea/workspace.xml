@@ -14,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="SentenceMatchTrainer.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="SentenceMatchTrainer.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/SentenceMatchTrainer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="211">
-              <caret line="312" column="35" lean-forward="true" selection-start-line="312" selection-start-column="35" selection-end-line="312" selection-end-column="35" />
+            <state relative-caret-position="215">
+              <caret line="187" column="32" lean-forward="true" selection-start-line="187" selection-start-column="32" selection-end-line="187" selection-end-column="32" />
               <folding />
             </state>
           </provider>
@@ -36,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="SentenceMatchDataStream.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="SentenceMatchDataStream.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/SentenceMatchDataStream.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="144">
-              <caret line="70" column="21" lean-forward="true" selection-start-line="70" selection-start-column="21" selection-end-line="70" selection-end-column="21" />
+            <state relative-caret-position="215">
+              <caret line="43" column="26" lean-forward="true" selection-start-line="43" selection-start-column="26" selection-end-line="43" selection-end-column="26" />
               <folding>
                 <element signature="e#0#18#0" expanded="true" />
               </folding>
@@ -59,8 +59,8 @@
     <option name="CHANGED_PATHS">
       <list>
         <option value="$PROJECT_DIR$/SentenceMatchModelGraph.py" />
-        <option value="$PROJECT_DIR$/SentenceMatchTrainer.py" />
         <option value="$PROJECT_DIR$/SentenceMatchDataStream.py" />
+        <option value="$PROJECT_DIR$/SentenceMatchTrainer.py" />
       </list>
     </option>
   </component>
@@ -286,21 +286,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/SentenceMatchTrainer.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="211">
-          <caret line="312" column="35" lean-forward="true" selection-start-line="312" selection-start-column="35" selection-end-line="312" selection-end-column="35" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/SentenceMatchDataStream.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="144">
-          <caret line="70" column="21" lean-forward="true" selection-start-line="70" selection-start-column="21" selection-end-line="70" selection-end-column="21" />
+        <state relative-caret-position="215">
+          <caret line="43" column="26" lean-forward="true" selection-start-line="43" selection-start-column="26" selection-end-line="43" selection-end-column="26" />
           <folding>
             <element signature="e#0#18#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/SentenceMatchTrainer.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="215">
+          <caret line="187" column="32" lean-forward="true" selection-start-line="187" selection-start-column="32" selection-end-line="187" selection-end-column="32" />
+          <folding />
         </state>
       </provider>
     </entry>
