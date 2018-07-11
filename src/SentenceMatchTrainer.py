@@ -200,7 +200,7 @@ def Get_Next_box_size (index):
 def main(_):
 
     print ('Configuration')
-    FLAGS.run_id = 'map12'
+    FLAGS.run_id = 'map1-'
     log_dir = FLAGS.model_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -308,8 +308,12 @@ def main(_):
                                  }
                         _, loss_value = sess.run([train_graph.get_train_op(), train_graph.get_loss()], feed_dict=feed_dict)
                         #print (loss_value)
-                        #print (sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
+                        print (sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
                         #loss_value = sess.run([train_graph.logits1], feed_dict=feed_dict)
+                        import math
+                        if math.isnan(loss_value):
+                            print(sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
+
                         total_loss += loss_value
                         if (step+1) % epoch_size == 0 or (step + 1) == max_steps:
                             if (step+1) == max_steps:
