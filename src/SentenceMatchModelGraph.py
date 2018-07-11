@@ -16,11 +16,11 @@ def get_place_holder (q_count, type, shape):
 class SentenceMatchModelGraph(object):
     def __init__(self, num_classes=3,
                 learning_rate=0.001, optimize_type='adam', lambda_l2=1e-5,
-                 is_training=True, input_dim = 46
+                 is_training=True, input_dim = 136
                  , prediction_mode = 'list_wise'
                  ,loss_type = 'poset_net'
                  , pos_avg = True,
-                 q_count=2, dropout_rate = 0.05):
+                 q_count=2, dropout_rate = 0.1):
 
         # ======word representation layer======
 
@@ -34,53 +34,62 @@ class SentenceMatchModelGraph(object):
                 if prediction_mode == 'point_wise':
                     sec_dim = num_classes
                 v = self.input_vector[i]#tf.reshape(self.input_vector[i], [1, tf.shape(self.input_vector[i])[0]])
-                w = tf.get_variable("w", [input_dim, input_dim],dtype=tf.float32)
-                b = tf.get_variable("b", [input_dim],dtype=tf.float32)
-                v = tf.nn.relu(tf.matmul(v, w) + b)
-                if is_training:
-                    v = tf.nn.dropout(v, (1 - dropout_rate))
-                else:
-                    v = tf.multiply(v, (1 - dropout_rate))
+                # w = tf.get_variable("w", [input_dim, input_dim],dtype=tf.float32)
+                # b = tf.get_variable("b", [input_dim],dtype=tf.float32)
+                # v = tf.nn.relu(tf.matmul(v, w) + b)
+                # if is_training:
+                #     v = tf.nn.dropout(v, (1 - dropout_rate))
+                # else:
+                #     v = tf.multiply(v, (1 - dropout_rate))
+
+                # w = tf.get_variable("w2", [input_dim, input_dim],dtype=tf.float32)
+                # b = tf.get_variable("b2", [input_dim],dtype=tf.float32)
+                # v = tf.nn.relu(tf.matmul(v, w) + b)
+                # if is_training:
+                #     v = tf.nn.dropout(v, (1 - dropout_rate))
+                # else:
+                #     v = tf.multiply(v, (1 - dropout_rate))
+
                 w_1 = tf.get_variable("w_1", [input_dim, sec_dim],dtype=tf.float32)
                 b_1 = tf.get_variable("b_1", [sec_dim],dtype=tf.float32)
                 logits = tf.matmul(v, w_1) + b_1
                 logits = tf.reshape(logits, [-1])
                 if prediction_mode != 'point_wise':
-                    #score_list.append(tf.reshape(logits, [-1]))
-                    self.score = tf.reshape(logits, [-1])
+                    score_list.append(tf.reshape(logits, [-1]))
+                    #self.score = tf.reshape(logits, [-1])
                     #logits = tf.reshape(logits, shape=[self.question_count[i], self.answer_count[i]])
                     #gold_matrix = tf.reshape(self.truth[i], shape=[self.question_count[i], self.answer_count[i]])
                     #g1_matrix = tf.ceil(self.truth[i] - eps)
                     if prediction_mode == 'list_wise':
                         if loss_type == 'list_net':
-                            if i == 1:
-                                print ('ssss')
                             self.logits = tf.nn.softmax(logits)  # [question_count, answer_count]
-                            self.soft_truth = tf.nn.softmax(self.truth[i])
-                            #self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
+                            #self.soft_truth = tf.nn.softmax(self.truth[i])
+                            self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
                             # loss_list.append(tf.reduce_sum(
                             #     tf.multiply(soft_truth, tf.log(soft_truth+eps)) - tf.multiply(soft_truth, tf.log(logits))
                             #    ))
-                            self.loss = tf.reduce_sum(
-                                tf.multiply(self.soft_truth, tf.log(self.soft_truth))
+                            loss_list.append(tf.reduce_sum(
+                                #tf.multiply(self.soft_truth, tf.log(self.soft_truth + eps))
                                 - tf.multiply(self.soft_truth, tf.log(self.logits))
-                               )
+                                #-tf.log(self.logits)
+                               ))
                         elif loss_type == 'poset_net':
                             gold = self.truth[i]
                             #mask2:
-                            g1 = tf.maximum(gold, 1.0)
-                            self.mask2 = g1 - 1.0
-                            self.mask01 = 1.0 - self.mask2
-                            self.mask12 = tf.minimum(gold, 1.0)
-                            self.mask1 = self.mask12 - self.mask2
-                            self.mask0 = self.mask01 - self.mask1
-                            self.fi, pos_cnt = self.poset_loss(logits,self.mask2, self.mask01)
-                            self.fi1, pos_cnt1 = self.poset_loss(logits,self.mask1, self.mask0)
-                            fi = tf.add(self.fi, self.fi1)
-                            pos_cnt =tf.add(pos_cnt, pos_cnt1)
+                            # g1 = tf.maximum(gold, 1.0)
+                            # self.mask2 = g1 - 1.0
+                            # self.mask01 = 1.0 - self.mask2
+                            # self.mask12 = tf.minimum(gold, 1.0)
+                            # self.mask1 = self.mask12 - self.mask2
+                            # self.mask0 = self.mask01 - self.mask1
+                            # self.fi, pos_cnt = self.poset_loss(logits,self.mask2, self.mask01)
+                            # self.fi1, pos_cnt1 = self.poset_loss(logits,self.mask1, self.mask0)
+                            # fi = tf.add(self.fi, self.fi1)
+                            # pos_cnt =tf.add(pos_cnt, pos_cnt1)
+                            fi, pos_cnt = self.poset_loss(logits,gold, 1-gold)
                             if pos_avg == True:
                                 fi = tf.divide(fi, pos_cnt)
-                            self.loss = fi
+                            loss_list.append(fi)
 
 
                 else: #pointwise-cross entropy
@@ -90,9 +99,9 @@ class SentenceMatchModelGraph(object):
                     loss_list.append(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=gold_matrix)))
                 tf.get_variable_scope().reuse_variables()
 
-        #self.loss = tf.stack (loss_list, 0)
-        #self.loss = tf.reduce_mean(self.loss, 0)
-        #self.score = tf.concat(score_list, 0)
+        self.loss = tf.stack (loss_list, 0)
+        self.loss = tf.reduce_mean(self.loss, 0)
+        self.score = tf.concat(score_list, 0)
         if optimize_type == 'adadelta':
             clipper = 50 
             optimizer = tf.train.AdadeltaOptimizer(learning_rate=learning_rate)
@@ -138,10 +147,10 @@ class SentenceMatchModelGraph(object):
         has_neg = tf.reduce_max(neg_mask)
         has_pos_neg = tf.multiply(has_pos , has_neg)
         pos_count = tf.reduce_sum(pos_mask)  # [1]
-        neg_exp = tf.exp(tf.multiply(neg_mask, logits))  # [a]
+        neg_exp = tf.exp(logits)  # [a]
         neg_exp = tf.multiply(neg_exp, neg_mask)
         neg_exp_sum = tf.reduce_sum(neg_exp)  # [1]
-        pos_exp = tf.exp(tf.multiply(pos_mask, logits))  # [a]
+        pos_exp = tf.exp(logits)  # [a]
         fi = tf.log(1 + tf.divide(neg_exp_sum, pos_exp))#+ (1.0-has_pos_neg)))  # [a]
         fi = tf.multiply(fi, pos_mask)  # [a]
         fi = tf.reduce_sum(fi)  # [1]
@@ -150,8 +159,10 @@ class SentenceMatchModelGraph(object):
         #     loss_list.append(fi)
         # else:
         #     loss_list.append(fi)
-        fi = tf.multiply(fi , has_pos_neg)
-        pos_count = tf.multiply(pos_count ,has_pos_neg)
+
+
+        #fi = tf.multiply(fi , has_pos_neg)
+        #pos_count = tf.multiply(pos_count ,has_pos_neg)
         return fi , pos_count
 
     def get_score(self):

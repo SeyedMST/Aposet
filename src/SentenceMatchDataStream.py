@@ -65,9 +65,13 @@ def wikiQaGenerate(filename, is_training):
         #if line.startswith('-'): continue
         item = re.split(" ", line)
         label = int (item[0])
+        if label == 3:
+            label = 1
+        if label == 4:
+            label = 1
         # if label == 1:
         #     label = 0
-        if label ==2:
+        if label == 2:
             label = 1
 
         question = str (re.split(":", item [1])[1])
@@ -119,7 +123,7 @@ def wikiQaGenerate(filename, is_training):
     instances = []
     for i in range(len(question)):
         instances.append((question[i], answer[i], label[i]))
-    random.shuffle(instances)  # random works inplace and returns None
+    #random.shuffle(instances)  # random works inplace and returns None
     if is_training == True:
         batches = make_batches_as(instances, is_training)
     else:
@@ -174,7 +178,7 @@ class SentenceMatchDataStream(object):
         self.num_batch = len(self.batches)
         self.index_array = np.arange(self.num_batch)
         self.isShuffle = isShuffle
-        if self.isShuffle: np.random.shuffle(self.index_array) 
+        if self.isShuffle: np.random.shuffle(self.index_array)
         self.isLoop = isLoop
         self.cur_pointer = 0
 
@@ -194,7 +198,7 @@ class SentenceMatchDataStream(object):
         if self.cur_pointer>=self.num_batch:
             if not self.isLoop: return None
             self.cur_pointer = 0 
-            if self.isShuffle: np.random.shuffle(self.index_array) 
+            if self.isShuffle: np.random.shuffle(self.index_array)
 #         print('{} '.format(self.index_array[self.cur_pointer]))
         cur_batch = self.batches[self.index_array[self.cur_pointer]]
         self.cur_pointer += 1

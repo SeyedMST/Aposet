@@ -156,13 +156,15 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
-    list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
+    #list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
                                                                         # map1 label 1->0 , 2->1 [listnet: crossentropy]
                                                                         # ndcg3 [kl, pos_avg=True, pos_avg=False] ndcg@1
                                                                         # map4 2->1
                                                                         # map7 2->1 [same ndcg1, 2layer NN]
                                                                         # map8 2->1 [same map7, 1layer NN]
                                                                         # map9 same map7
+                                                                        # map10 same map9 randseed:123
+                                                                        # map11 T/sum(T) for kl
 
 
     #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
@@ -170,15 +172,17 @@ def Get_Next_box_size (index):
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
                                         #map6 same as map5 but delete test with no correct answers
+
+    list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
-    qa_path = 'MQ2008/Fold' + FLAGS.fold + '/'
+    qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
     FLAGS.train_path = '../data/' +qa_path +'train.txt'
     FLAGS.dev_path= '../data/' + qa_path +'vali.txt'
-    FLAGS.test_path= '../data/'+qa_path+'test.txt'
+    FLAGS.test_path= '../data/'+ qa_path +'test.txt'
     FLAGS.prediction_mode = 'list_wise'
-    FLAGS.iter_count = 15
-    FLAGS.max_epochs = 20
+    FLAGS.iter_count = 3#4
+    FLAGS.max_epochs = 50
     FLAGS.is_ndcg = False
     FLAGS.loss_type = 'list_net'
     if index%3 == 0:
@@ -195,7 +199,8 @@ def Get_Next_box_size (index):
 
 def main(_):
 
-    FLAGS.run_id = 'map9'
+    print ('Configuration')
+    FLAGS.run_id = 'map12'
     log_dir = FLAGS.model_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -208,7 +213,7 @@ def main(_):
         dev_path = FLAGS.dev_path
         test_path = FLAGS.test_path
         best_path = path_prefix + '.best.model'
-        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=True, isLoop=True, isSort=True)
+        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
 
         #train_testDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
 
@@ -227,6 +232,8 @@ def main(_):
         output_res_index = 1
         # best_test_acc = 0
         max_test_ndcg = 0
+        max_valid = 0
+        max_test = 0
         # max_dev_ndcg = 0
         while output_res_index <= FLAGS.iter_count:
             # st_cuda = ''
@@ -240,9 +247,10 @@ def main(_):
             # output_res_file.write(str(FLAGS) + '\n\n')
             # stt = str (FLAGS)
             # best_dev_acc = 0.0
-            max_test_ndcg_iter = 0
-            init_scale = 0.01
+            init_scale = 0.001
             with tf.Graph().as_default():
+                # tf.set_random_seed(0)
+                # np.random.seed(123)
                 initializer = tf.random_uniform_initializer(-init_scale, init_scale)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
                     train_graph = SentenceMatchModelGraph(num_classes=3, is_training=True, learning_rate=FLAGS.learning_rate
@@ -258,15 +266,23 @@ def main(_):
                                                           q_count=1, loss_type = FLAGS.loss_type,
                                                           pos_avg=FLAGS.pos_avg)
 
-
+                # tf.set_random_seed(123)
+                # np.random.seed(123)
                 initializer = tf.global_variables_initializer()
+                # tf.set_random_seed(123)
+                # np.random.seed(123)
+
                 vars_ = {}
                 #for var in tf.all_variables():
                 for var in tf.global_variables():
                     vars_[var.name.split(":")[0]] = var
                 saver = tf.train.Saver(vars_)
 
+                max_valid_iter = 0
+                max_test_ndcg_iter = 0
                 with tf.Session() as sess:
+                    # tf.set_random_seed(123)
+                    # np.random.seed(123)
                     sess.run(initializer)
 
                     train_size = trainDataStream.get_num_batch()
@@ -274,8 +290,6 @@ def main(_):
                     epoch_size = max_steps // (FLAGS.max_epochs) + 1
                     total_loss = 0.0
                     start_time = time.time()
-
-                    max_valid = 0
                     for step in range(max_steps):
                         # read data
                         _truth = []
@@ -294,23 +308,29 @@ def main(_):
                                  }
                         _, loss_value = sess.run([train_graph.get_train_op(), train_graph.get_loss()], feed_dict=feed_dict)
                         #print (loss_value)
-                        #print (sess.run([train_graph.truth, train_graph.mask01, train_graph.mask0], feed_dict=feed_dict))
+                        #print (sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
                         #loss_value = sess.run([train_graph.logits1], feed_dict=feed_dict)
                         total_loss += loss_value
                         if (step+1) % epoch_size == 0 or (step + 1) == max_steps:
-                            #print(total_loss)
+                            if (step+1) == max_steps:
+                                print(total_loss)
                             duration = time.time() - start_time
                             start_time = time.time()
                             total_loss = 0.0
 
                             my_map, my_mrr = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg)
+                            v_map = my_map
+                            if v_map > max_valid:
+                                max_valid = v_map
                             flag_valid = False
-                            if my_map > max_valid:
-                                max_valid = my_map
+                            if my_map > max_valid_iter:
+                                max_valid_iter = my_map
                                 flag_valid = True
+                            my_map, my_mrr = evaluate(testDataStream, valid_graph, sess, is_ndcg=FLAGS.is_ndcg,
+                                                      flag_valid=flag_valid)
+                            if my_map > max_test:
+                                max_test = my_map
                             if flag_valid == True:
-                                my_map, my_mrr = evaluate(testDataStream, valid_graph, sess, is_ndcg=FLAGS.is_ndcg,
-                                      flag_valid=flag_valid)
                                 if my_map > max_test_ndcg and FLAGS.store_best == True:
                                     best_test_acc = my_map
                                     saver.save(sess, best_path)
@@ -318,12 +338,14 @@ def main(_):
                                     max_test_ndcg = my_map
                                 if my_map > max_test_ndcg_iter:
                                     max_test_ndcg_iter = my_map
+                            #print ("{} - {}".format(v_map, my_map))
 
+            #print (total_loss)
             print ("{}-{}: {}".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
 
 
-        print ("fold: {} index: {} - test: {}".format(FLAGS.fold, FLAGS.start_batch, max_test_ndcg))
-        output_res_file.write("fold: {} index: {} - test: {}\n".format(FLAGS.fold, FLAGS.start_batch, max_test_ndcg))
+        print ("{}-{}: {}-{}-{}".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))
+        output_res_file.write("{}-{}: {}-{}-{}\n".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))
         FLAGS.start_batch += FLAGS.step_batch
 
     output_res_file.close()
@@ -344,12 +366,12 @@ if __name__ == '__main__':
     parser.add_argument('--end_batch', type=int, default=0, help='Maximum epochs for training.')
     parser.add_argument('--step_batch', type=int, default=1, help='Maximum epochs for training.')
 
-    parser.add_argument('--is_ndcg',default=True, type= bool, help='do we have cuda visible devices?')
+    parser.add_argument('--is_ndcg',default=False, type= bool, help='do we have cuda visible devices?')
 
     parser.add_argument('--pos_avg',default=True, type= bool, help='do we have cuda visible devices?')
     parser.add_argument('--cross_validate',default=True, type= bool, help='do we have cuda visible devices?')
 
-    parser.add_argument('--question_count_per_batch', type=int, default= 1, help='Number of instances in each batch.')
+    parser.add_argument('--question_count_per_batch', type=int, default=1, help='Number of instances in each batch.')
 
     qa_path = 'MQ2008/Fold2/'
     parser.add_argument('--optimize_type', type=str, default='adam', help='Optimizer type.')
@@ -359,8 +381,8 @@ if __name__ == '__main__':
     parser.add_argument('--test_path', type=str, default = '../data/'+qa_path+'test.txt',help='Path to the test set.')
     parser.add_argument('--model_dir', type=str,default = '../models',help='Directory to save model files.')
 
-    parser.add_argument('--learning_rate', type=float, default=0.002, help='Learning rate.')
-    parser.add_argument('--lambda_l2', type=float, default=0.0001, help='The coefficient of L2 regularizer.')
+    parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
+    parser.add_argument('--lambda_l2', type=float, default=0.000001, help='The coefficient of L2 regularizer.')
     parser.add_argument('--suffix', type=str, default='normal', required=False, help='Suffix of the model name.')
     parser.add_argument('--run_id', default='10' , help = 'run_id')
 
