@@ -178,11 +178,12 @@ def Get_Next_box_size (index):
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
     qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
+    #qa_path = 'MQ2008/Fold' + FLAGS.fold + '/'
     FLAGS.train_path = '../data/' +qa_path +'train.txt'
     FLAGS.dev_path= '../data/' + qa_path +'vali.txt'
     FLAGS.test_path= '../data/'+ qa_path +'test.txt'
     FLAGS.prediction_mode = 'list_wise'
-    FLAGS.iter_count = 3#4
+    FLAGS.iter_count = 20
     FLAGS.max_epochs = 50
     FLAGS.is_ndcg = False
     FLAGS.loss_type = 'list_net'
@@ -201,7 +202,7 @@ def Get_Next_box_size (index):
 def main(_):
 
     print ('Configuration')
-    FLAGS.run_id = 'map1-'
+    FLAGS.run_id = 'map2-'
     log_dir = FLAGS.model_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -214,7 +215,7 @@ def main(_):
         dev_path = FLAGS.dev_path
         test_path = FLAGS.test_path
         best_path = path_prefix + '.best.model'
-        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
+        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=True, isLoop=True, isSort=True)
 
         #train_testDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
 
@@ -252,12 +253,15 @@ def main(_):
             with tf.Graph().as_default():
                 # tf.set_random_seed(0)
                 # np.random.seed(123)
+                input_dim = 136
+                if train_path.find ("2008") > 0:
+                    input_dim = 46
                 initializer = tf.random_uniform_initializer(-init_scale, init_scale)
                 with tf.variable_scope("Model", reuse=None, initializer=initializer):
                     train_graph = SentenceMatchModelGraph(num_classes=3, is_training=True, learning_rate=FLAGS.learning_rate
                                                           ,lambda_l2=FLAGS.lambda_l2, prediction_mode=FLAGS.prediction_mode,
                                                           q_count=FLAGS.question_count_per_batch, loss_type = FLAGS.loss_type,
-                                                          pos_avg=FLAGS.pos_avg)
+                                                          pos_avg=FLAGS.pos_avg, input_dim=input_dim)
                     tf.summary.scalar("Training Loss", train_graph.get_loss()) # Add a scalar summary for the snapshot loss.
 
         #         with tf.name_scope("Valid"):
@@ -265,7 +269,7 @@ def main(_):
                     valid_graph = SentenceMatchModelGraph(num_classes=3, is_training=True, learning_rate=FLAGS.learning_rate
                                                           ,lambda_l2=FLAGS.lambda_l2, prediction_mode=FLAGS.prediction_mode,
                                                           q_count=1, loss_type = FLAGS.loss_type,
-                                                          pos_avg=FLAGS.pos_avg)
+                                                          pos_avg=FLAGS.pos_avg, input_dim=input_dim)
 
                 # tf.set_random_seed(123)
                 # np.random.seed(123)
@@ -309,11 +313,12 @@ def main(_):
                                  }
                         _, loss_value = sess.run([train_graph.get_train_op(), train_graph.get_loss()], feed_dict=feed_dict)
                         #print (loss_value)
-                        print (sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
+                        #print (sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
                         #loss_value = sess.run([train_graph.logits1], feed_dict=feed_dict)
                         import math
                         if math.isnan(loss_value):
-                            print(sess.run([train_graph.truth, train_graph.soft_truth], feed_dict=feed_dict))
+                            print (step)
+                            print(sess.run([train_graph.truth, train_graph.soft_truth, train_graph.input_vector], feed_dict=feed_dict))
 
                         total_loss += loss_value
                         if (step+1) % epoch_size == 0 or (step + 1) == max_steps:

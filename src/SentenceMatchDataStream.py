@@ -60,6 +60,8 @@ def wikiQaGenerate(filename, is_training):
     del_question_count = 0 #wiki 1,245 (59% of questions deleted, 873 question remaine)
     del_all_count = 0 #wiki 11,688 (57% of pairs deleted, 8,672 remaine(9.9 answer per question))
 
+    max_val = {}
+    min_val = {}
     for line in data:
         line = line.strip()
         #if line.startswith('-'): continue
@@ -78,7 +80,14 @@ def wikiQaGenerate(filename, is_training):
         input_vector = []
         for i in range (2, len (item)):
             if str(item [i]).startswith('#'): break
-            input_vector.append(float (re.split(":", item [i])[1]))
+            r = float (re.split(":", item [i])[1])
+            input_vector.append(r)
+            max_val.setdefault(i-2, -100000000.0)
+            min_val.setdefault(i-2, 1000000000.0)
+            if r > max_val[i-2]:
+                max_val [i-2] = r
+            if r < min_val[i-2]:
+                min_val[i-2] = r
         question_dic.setdefault(question,{})
         question_dic[question].setdefault("question",[])
         question_dic[question].setdefault("answer",[])
@@ -87,19 +96,33 @@ def wikiQaGenerate(filename, is_training):
         question_dic[question]["answer"].append(input_vector)
         question_dic[question]["label"].append(label)
         all_count += 1
+        if all_count == 50000:
+            break
     for key in list(question_dic):
         question_count += 1
         question_dic[key]["question"] = question_dic[key]["question"]
         question_dic[key]["answer"] = question_dic[key]["answer"]
+        ll = []
+        for x in question_dic[key]['answer']:
+            l = []
+            for i in range(len(x)):
+                if max_val[i] - min_val[i] > eps:
+                    l.append((x[i] - min_val[i])/(max_val[i] - min_val[i]))
+                else:
+                    l.append(x[i]-min_val[i])
+            ll.append(l)
+        question_dic[key]["answer"] = ll
+
         last_x = -100
         flag_delete = True
-        for x in  question_dic[key]["answer"]:
+
+        for x in question_dic[key]["label"]:
             if last_x == -100:
                 last_x = x
             if x != last_x:
                 flag_delete = False
                 break
-        if (sum(question_dic[key]["label"]) <eps or (is_training == True and flag_delete == True)):
+        if (flag_delete == True):
             del_question_count += 1
             del_all_count += len(question_dic[key]["question"])
             del(question_dic[key])
