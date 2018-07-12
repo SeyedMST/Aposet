@@ -169,6 +169,7 @@ def Get_Next_box_size (index):
                                                                         #map2- config ro taft bezan :)
                                                                         #map13 hamoon map2 ba iter bishtar.
                                                                         #map14 map13 ba question count 4
+                                                                        #ndcg5 map13
 
 
     #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
@@ -188,7 +189,7 @@ def Get_Next_box_size (index):
     FLAGS.prediction_mode = 'list_wise'
     FLAGS.iter_count = 30
     FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = False
+    FLAGS.is_ndcg = True
     FLAGS.loss_type = 'list_net'
     if index%3 == 0:
         FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
@@ -204,7 +205,7 @@ def Get_Next_box_size (index):
 
 def main(_):
 
-    FLAGS.run_id = 'map14'
+    FLAGS.run_id = 'ndcg5'
 
     print ('Configuration')
 
@@ -389,7 +390,7 @@ if __name__ == '__main__':
     parser.add_argument('--pos_avg',default=True, type= bool, help='do we have cuda visible devices?')
     parser.add_argument('--cross_validate',default=True, type= bool, help='do we have cuda visible devices?')
 
-    parser.add_argument('--question_count_per_batch', type=int, default=4, help='Number of instances in each batch.')
+    parser.add_argument('--question_count_per_batch', type=int, default=1, help='Number of instances in each batch.')
 
     qa_path = 'MQ2008/Fold2/'
     parser.add_argument('--optimize_type', type=str, default='adam', help='Optimizer type.')

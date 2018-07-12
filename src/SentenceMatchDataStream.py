@@ -67,14 +67,16 @@ def wikiQaGenerate(filename, is_training):
         #if line.startswith('-'): continue
         item = re.split(" ", line)
         label = int (item[0])
-        if label == 3:
-            label = 1
-        if label == 4:
-            label = 1
+        # if label == 3:
+        #     label = 1
+        # if label == 4:
+        #     label = 1
         # if label == 1:
         #     label = 0
-        if label == 2:
-            label = 1
+
+
+        # if label == 2:
+        #     label = 1
 
         question = str (re.split(":", item [1])[1])
         input_vector = []

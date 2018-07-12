@@ -76,17 +76,17 @@ class SentenceMatchModelGraph(object):
                         elif loss_type == 'poset_net':
                             gold = self.truth[i]
                             #mask2:
-                            # g1 = tf.maximum(gold, 1.0)
-                            # self.mask2 = g1 - 1.0
-                            # self.mask01 = 1.0 - self.mask2
-                            # self.mask12 = tf.minimum(gold, 1.0)
-                            # self.mask1 = self.mask12 - self.mask2
-                            # self.mask0 = self.mask01 - self.mask1
-                            # self.fi, pos_cnt = self.poset_loss(logits,self.mask2, self.mask01)
-                            # self.fi1, pos_cnt1 = self.poset_loss(logits,self.mask1, self.mask0)
-                            # fi = tf.add(self.fi, self.fi1)
-                            # pos_cnt =tf.add(pos_cnt, pos_cnt1)
-                            fi, pos_cnt = self.poset_loss(logits,gold, 1-gold)
+                            g1 = tf.maximum(gold, 1.0)
+                            self.mask2 = g1 - 1.0
+                            self.mask01 = 1.0 - self.mask2
+                            self.mask12 = tf.minimum(gold, 1.0)
+                            self.mask1 = self.mask12 - self.mask2
+                            self.mask0 = self.mask01 - self.mask1
+                            self.fi, pos_cnt = self.poset_loss(logits,self.mask2, self.mask01)
+                            self.fi1, pos_cnt1 = self.poset_loss(logits,self.mask1, self.mask0)
+                            fi = tf.add(self.fi, self.fi1)
+                            pos_cnt =tf.add(pos_cnt, pos_cnt1)
+                            #fi, pos_cnt = self.poset_loss(logits,gold, 1-gold)
                             if pos_avg == True:
                                 fi = tf.divide(fi, pos_cnt)
                             loss_list.append(fi)
@@ -161,8 +161,8 @@ class SentenceMatchModelGraph(object):
         #     loss_list.append(fi)
 
 
-        #fi = tf.multiply(fi , has_pos_neg)
-        #pos_count = tf.multiply(pos_count ,has_pos_neg)
+        fi = tf.multiply(fi , has_pos_neg)
+        pos_count = tf.multiply(pos_count ,has_pos_neg)
         return fi , pos_count
 
     def get_score(self):
