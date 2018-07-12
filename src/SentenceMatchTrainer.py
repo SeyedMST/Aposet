@@ -157,7 +157,7 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
-    #list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
+    list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
                                                                         # map1 label 1->0 , 2->1 [listnet: crossentropy]
                                                                         # ndcg3 [kl, pos_avg=True, pos_avg=False] ndcg@1
                                                                         # map4 2->1
@@ -166,10 +166,11 @@ def Get_Next_box_size (index):
                                                                         # map9 same map7
                                                                         # map10 same map9 randseed:123
                                                                         # map11 T/sum(T) for kl
-                                                                        #map2- config ro taft bezan :)
+                                                                        #map2- config ro taft bezan :) [listnet cross, T/sum(T)]
                                                                         #map13 hamoon map2 ba iter bishtar.
-                                                                        #map14 map13 ba question count 4
+                                                                        #map14 map13 ba question count 4 (behtare vali dar kol badtare baraie moghaiese)
                                                                         #ndcg5 map13
+            # map15 [cross, softmax ->which used in listnet paper]
 
 
     #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
@@ -178,7 +179,8 @@ def Get_Next_box_size (index):
                                         #map5 [list-net cross T/sum(T)] 2->1
                                         #map6 same as map5 but delete test with no correct answers
 
-    list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
+
+    #list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
     #qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
@@ -189,7 +191,7 @@ def Get_Next_box_size (index):
     FLAGS.prediction_mode = 'list_wise'
     FLAGS.iter_count = 30
     FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = True
+    FLAGS.is_ndcg = False
     FLAGS.loss_type = 'list_net'
     if index%3 == 0:
         FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
@@ -205,7 +207,7 @@ def Get_Next_box_size (index):
 
 def main(_):
 
-    FLAGS.run_id = 'ndcg5'
+    FLAGS.run_id = 'map15'
 
     print ('Configuration')
 

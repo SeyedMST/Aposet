@@ -63,8 +63,8 @@ class SentenceMatchModelGraph(object):
                     if prediction_mode == 'list_wise':
                         if loss_type == 'list_net':
                             self.logits = tf.nn.softmax(logits)  # [question_count, answer_count]
-                            #self.soft_truth = tf.nn.softmax(self.truth[i])
-                            self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
+                            self.soft_truth = tf.nn.softmax(self.truth[i])
+                            #self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
                             # loss_list.append(tf.reduce_sum(
                             #     tf.multiply(soft_truth, tf.log(soft_truth+eps)) - tf.multiply(soft_truth, tf.log(logits))
                             #    ))
