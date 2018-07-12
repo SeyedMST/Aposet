@@ -166,6 +166,9 @@ def Get_Next_box_size (index):
                                                                         # map9 same map7
                                                                         # map10 same map9 randseed:123
                                                                         # map11 T/sum(T) for kl
+                                                                        #map2- config ro taft bezan :)
+                                                                        #map13 hamoon map2 ba iter bishtar.
+                                                                        #map14 map13 ba question count 4
 
 
     #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
@@ -177,13 +180,13 @@ def Get_Next_box_size (index):
     list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
-    qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
-    #qa_path = 'MQ2008/Fold' + FLAGS.fold + '/'
+    #qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
+    qa_path = 'MQ2008/Fold' + FLAGS.fold + '/'
     FLAGS.train_path = '../data/' +qa_path +'train.txt'
     FLAGS.dev_path= '../data/' + qa_path +'vali.txt'
     FLAGS.test_path= '../data/'+ qa_path +'test.txt'
     FLAGS.prediction_mode = 'list_wise'
-    FLAGS.iter_count = 10
+    FLAGS.iter_count = 30
     FLAGS.max_epochs = 50
     FLAGS.is_ndcg = False
     FLAGS.loss_type = 'list_net'
@@ -201,8 +204,10 @@ def Get_Next_box_size (index):
 
 def main(_):
 
+    FLAGS.run_id = 'map14'
+
     print ('Configuration')
-    FLAGS.run_id = 'map2-'
+
     log_dir = FLAGS.model_dir
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -384,7 +389,7 @@ if __name__ == '__main__':
     parser.add_argument('--pos_avg',default=True, type= bool, help='do we have cuda visible devices?')
     parser.add_argument('--cross_validate',default=True, type= bool, help='do we have cuda visible devices?')
 
-    parser.add_argument('--question_count_per_batch', type=int, default=1, help='Number of instances in each batch.')
+    parser.add_argument('--question_count_per_batch', type=int, default=4, help='Number of instances in each batch.')
 
     qa_path = 'MQ2008/Fold2/'
     parser.add_argument('--optimize_type', type=str, default='adam', help='Optimizer type.')

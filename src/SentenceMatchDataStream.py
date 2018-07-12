@@ -102,18 +102,18 @@ def wikiQaGenerate(filename, is_training):
         question_count += 1
         question_dic[key]["question"] = question_dic[key]["question"]
         question_dic[key]["answer"] = question_dic[key]["answer"]
-        ll = []
-        for x in question_dic[key]['answer']:
-            l = []
-            for i in range(len(x)):
-                if max_val[i] - min_val[i] > eps:
-                    l.append((x[i] - min_val[i])/(max_val[i] - min_val[i]))
-                else:
-                    l.append(x[i]-min_val[i])
-            ll.append(l)
-
-        if len (ll[0]) > 100:
-            question_dic[key]["answer"] = ll
+        # ll = []
+        # for x in question_dic[key]['answer']:
+        #     l = []
+        #     for i in range(len(x)):
+        #         if max_val[i] - min_val[i] > eps:
+        #             l.append((x[i] - min_val[i])/(max_val[i] - min_val[i]))
+        #         else:
+        #             l.append(x[i]-min_val[i])
+        #     ll.append(l)
+        #
+        # if len (ll[0]) > 100:
+        #     question_dic[key]["answer"] = ll
 
         last_x = -100
         flag_delete = True
