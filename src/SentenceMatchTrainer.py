@@ -175,7 +175,7 @@ def sort_mle (label_list, answer_list):
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
-    list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
+    #list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
                                                                         # map1 label 1->0 , 2->1 [listnet: crossentropy]
                                                                         # ndcg3 [kl, pos_avg=True, pos_avg=False] ndcg@1
                                                                         # map4 2->1
@@ -193,7 +193,7 @@ def Get_Next_box_size (index):
             #map18 [cross, pos_avg=True, pos_avg=False]
 
 
-    #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
+    list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
