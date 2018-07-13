@@ -231,7 +231,7 @@ def Get_Next_box_size (index):
 
 def main(_):
 
-    FLAGS.run_id = 'ndcg7'
+    FLAGS.run_id = 'map17'
 
     print ('Configuration')
 

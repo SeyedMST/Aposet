@@ -75,8 +75,8 @@ def wikiQaGenerate(filename, is_training, zero_pad, zero_pad_max = 130):
         #     label = 0
 
 
-        # if label == 2:
-        #     label = 1
+        if label == 2:
+            label = 1
 
         question = str (re.split(":", item [1])[1])
         input_vector = []
