@@ -175,7 +175,7 @@ def sort_mle (label_list, answer_list):
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
-    #list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
+    list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
                                                                         # map1 label 1->0 , 2->1 [listnet: crossentropy]
                                                                         # ndcg3 [kl, pos_avg=True, pos_avg=False] ndcg@1
                                                                         # map4 2->1
@@ -190,9 +190,10 @@ def Get_Next_box_size (index):
                                                                         #ndcg5 map13
             # map15 [cross, softmax ->which used in listnet paper]
             #ndcg6 [crosssoft, listmle, poset_net]
+            #map18 [cross, pos_avg=True, pos_avg=False]
 
 
-    list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
+    #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
@@ -213,18 +214,17 @@ def Get_Next_box_size (index):
     FLAGS.prediction_mode = 'list_wise'
     FLAGS.iter_count = 30
     FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = True
-    FLAGS.loss_type = 'list_mle'
-    FLAGS.pos_avg = False
-    # if index%3 == 0:
-    #     FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
-    # if index%3 ==1:
-    #     FLAGS.loss_type = 'list_mle'
-    #     FLAGS.pos_avg = True
-    #     FLAGS.iter_count = 6
-    # if index%3 == 2:
-    #     FLAGS.loss_type = 'poset_net'
-    #     FLAGS.pos_avg = False
+    FLAGS.is_ndcg = False
+    #FLAGS.loss_type = 'list_mle'
+    #FLAGS.pos_avg = False
+    if index%3 == 0:
+        FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
+    if index%3 ==1:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = True
+    if index%3 == 2:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = False
 
     return True
 
