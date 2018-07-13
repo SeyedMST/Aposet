@@ -28,10 +28,11 @@ def evaluate(dataStream, valid_graph, sess, is_ndcg,
     labels = []
     for batch_index in range(dataStream.get_num_batch()):
         cur_dev_batch = dataStream.get_batch(batch_index)
-        (label_id_batch, input_vector_batch) = cur_dev_batch
+        (label_id_batch, input_vector_batch, mask_batch) = cur_dev_batch
         feed_dict = {
                     valid_graph.get_truth(): label_id_batch,
-                    valid_graph.get_input_vector(): input_vector_batch
+                    valid_graph.get_input_vector(): input_vector_batch,
+            valid_graph.get_mask(): mask_batch
                 }
         scores.append(sess.run(valid_graph.get_score(), feed_dict=feed_dict))
         labels.append (label_id_batch)
@@ -140,6 +141,23 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
     # else:
     #     return (my_map, my_mrr, output_sentences, output_attention_weights)
 
+
+def sort_mle (label_list, answer_list):
+    l = []
+    for i in range(len(label_list)):
+        l.append((label_list[i], answer_list[i]))
+    random.shuffle(l)
+    l = sorted(l, key=lambda instance: (instance[0]), reverse=True)  # sort based on len (answer[i])
+    label_list = []
+    answer_list = []
+    for i in range(len(l)):
+        label_list.append(l[i][0])
+        answer_list.append(l[i][1])
+    label_list = np.array(label_list)
+    answer_list = np.array(answer_list)
+    return label_list, answer_list
+
+
 # def ouput_prob1(probs, label_vocab, lable_true):
 #     out_string = ""
 #     for i in range(probs.size):
@@ -157,7 +175,7 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
 def Get_Next_box_size (index):
     if  (index > FLAGS.end_batch):
         return False
-    list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
+    #list = ['1','1','1','2','2','2','3','3','3','4','4','4','5','5','5'] #ndcg1 [kl,pos_avg=True,pos_avg=False] ndcg@10
                                                                         # map1 label 1->0 , 2->1 [listnet: crossentropy]
                                                                         # ndcg3 [kl, pos_avg=True, pos_avg=False] ndcg@1
                                                                         # map4 2->1
@@ -171,13 +189,17 @@ def Get_Next_box_size (index):
                                                                         #map14 map13 ba question count 4 (behtare vali dar kol badtare baraie moghaiese)
                                                                         #ndcg5 map13
             # map15 [cross, softmax ->which used in listnet paper]
+            #ndcg6 [crosssoft, listmle, poset_net]
 
 
-    #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
+    list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
                                         #map6 same as map5 but delete test with no correct answers
+
+                                        #ndcg7 list_mle
+                                        #map17 list_mle
 
 
     #list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
@@ -191,23 +213,25 @@ def Get_Next_box_size (index):
     FLAGS.prediction_mode = 'list_wise'
     FLAGS.iter_count = 30
     FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = False
-    FLAGS.loss_type = 'list_net'
-    if index%3 == 0:
-        FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
-    if index%3 ==1:
-        FLAGS.loss_type = 'poset_net'
-        FLAGS.pos_avg = True
-    if index%3 == 2:
-        FLAGS.loss_type = 'poset_net'
-        FLAGS.pos_avg = False
+    FLAGS.is_ndcg = True
+    FLAGS.loss_type = 'list_mle'
+    FLAGS.pos_avg = False
+    # if index%3 == 0:
+    #     FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
+    # if index%3 ==1:
+    #     FLAGS.loss_type = 'list_mle'
+    #     FLAGS.pos_avg = True
+    #     FLAGS.iter_count = 6
+    # if index%3 == 2:
+    #     FLAGS.loss_type = 'poset_net'
+    #     FLAGS.pos_avg = False
 
     return True
 
 
 def main(_):
 
-    FLAGS.run_id = 'map15'
+    FLAGS.run_id = 'ndcg7'
 
     print ('Configuration')
 
@@ -223,7 +247,14 @@ def main(_):
         dev_path = FLAGS.dev_path
         test_path = FLAGS.test_path
         best_path = path_prefix + '.best.model'
-        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=True, isLoop=True, isSort=True)
+
+        #zero_pad = True
+        zero_pad = False
+        if FLAGS.prediction_mode == 'list_wise' and FLAGS.loss_type == 'list_mle':
+            zero_pad = True
+
+        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=True, isLoop=True, isSort=True, zero_pad=zero_pad)
+                                                    #isShuggle must be true because it dtermines we are training or not.
 
         #train_testDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
 
@@ -307,17 +338,22 @@ def main(_):
                         # read data
                         _truth = []
                         _input_vector = []
+                        _mask = []
                         for i in range (FLAGS.question_count_per_batch):
                             cur_batch, batch_index = trainDataStream.nextBatch()
-                            (label_id_batch, input_vector_batch) = cur_batch
+                            (label_id_batch, input_vector_batch, mask_batch) = cur_batch
 
+                            if FLAGS.prediction_mode == 'list_wise' and FLAGS.loss_type == 'list_mle':
+                                label_id_batch, input_vector_batch = sort_mle(label_id_batch, input_vector_batch)
                             _truth.append(label_id_batch)
                             _input_vector.append(input_vector_batch)
+                            _mask.append(mask_batch)
 
                         #print (_truth)
                         feed_dict = {
                                 train_graph.get_truth() : tuple(_truth),
                                 train_graph.get_input_vector() : tuple(_input_vector),
+                            train_graph.get_mask() :tuple (_mask)
                                  }
                         _, loss_value = sess.run([train_graph.get_train_op(), train_graph.get_loss()], feed_dict=feed_dict)
                         #print (loss_value)
@@ -326,7 +362,8 @@ def main(_):
                         import math
                         if math.isnan(loss_value):
                             print (step)
-                            print(sess.run([train_graph.truth, train_graph.soft_truth, train_graph.input_vector], feed_dict=feed_dict))
+                            print(sess.run([train_graph.truth, train_graph.mask,
+                                            train_graph.mask2, train_graph.mask01], feed_dict=feed_dict))
 
                         total_loss += loss_value
                         if (step+1) % epoch_size == 0 or (step + 1) == max_steps:

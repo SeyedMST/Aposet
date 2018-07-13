@@ -20,9 +20,16 @@ q = tf.nn.softmax(q0[0])
 # q = tf.nn.softmax(q)  # [question_count, answer_count]
 # p = tf.nn.softmax(p)
 
-loss = tf.reduce_sum(
-                        tf.multiply(p, tf.log(p)) - tf.multiply(p, tf.log(q))
-                               )
+jp = np.ones(4, np.float32)
+jp [1] = 0
+
+loss = tf.multiply(jp, p)
+
+
+
+#loss = tf.reduce_sum(
+#                        tf.multiply(p, tf.log(p)) - tf.multiply(p, tf.log(q))
+#                               )
 
 
 with tf.Session() as sess:
@@ -45,7 +52,7 @@ with tf.Session() as sess:
         p0: tuple(_truth),
         q0: tuple(_input_vector),
     }
-    loss_value = sess.run([q], feed_dict=feed_dict)
+    loss_value = sess.run([loss], feed_dict=feed_dict)
 
     print (loss_value)
     #print(p.eval())

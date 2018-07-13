@@ -52,7 +52,7 @@ def make_batches_as (instances, is_training, batch_size=100000, max_answer_size=
     #    print ("smaller than count ", smaller_than_count)
     return (ans, question_count, ans_len)
 
-def wikiQaGenerate(filename, is_training):
+def wikiQaGenerate(filename, is_training, zero_pad, zero_pad_max = 130):
     data = open(filename, 'rt')
     question_dic = {}
     question_count = 0 #wiki 2,118
@@ -75,8 +75,8 @@ def wikiQaGenerate(filename, is_training):
         #     label = 0
 
 
-        if label == 2:
-            label = 1
+        # if label == 2:
+        #     label = 1
 
         question = str (re.split(":", item [1])[1])
         input_vector = []
@@ -137,10 +137,42 @@ def wikiQaGenerate(filename, is_training):
     pairs_count = 0
     pos_neg_pair_count = 0
     total_pair_count = 0
+
+    mask = np.ones((len(question_dic), zero_pad_max), np.float32)
+    ind = -1
     for item in question_dic.values():
-        label.append(item['label'])
-        answer.append(item ['answer']) # answer[i] = list of answers of question i
+        ind += 1
+        label_list = item ['label']
+        answer_list = item ['answer']
+        if zero_pad == True and is_training == True:
+
+            l = []
+            for i in range (len(label_list)):
+                l.append((label_list[i], answer_list[i]))
+            l = sorted(l, key=lambda instance: (instance[0]),reverse=True)  # sort based on len (answer[i])
+            label_list = []
+            answer_list = []
+            for i in range (len (l)):
+                label_list.append(l[i][0])
+                answer_list.append(l[i][1])
+
+            last_size = len(label_list)
+            new_size = zero_pad_max - len(label_list)
+            for i in range (new_size):
+                label_list.append(-1)
+                mask [ind, i + last_size] = 0
+
+            input_dim = len (answer_list[0])
+            for i in range (new_size):
+                l =  []
+                for j in range (input_dim):
+                    l.append(0)
+                answer_list.append(l)
+
+        label.append(label_list)
+        answer.append(answer_list) # answer[i] = list of answers of question i
         question += [([item["question"][0]])[0]] # question[i] = question i
+
         pairs_count += len(item ['answer'])
 
     question = np.array(question) # list of questions
@@ -149,7 +181,7 @@ def wikiQaGenerate(filename, is_training):
 
     instances = []
     for i in range(len(question)):
-        instances.append((question[i], answer[i], label[i]))
+        instances.append((question[i], answer[i], label[i], mask[i]))
     #random.shuffle(instances)  # random works inplace and returns None
     if is_training == True:
         batches = make_batches_as(instances, is_training)
@@ -161,21 +193,21 @@ def wikiQaGenerate(filename, is_training):
         candidate_answer_length.append(len(x[1]))
         for j in range (len(x[1])):
             ans.append(
-                (x[0], x[1][j], x[2][j]))
+                (x[0], x[1][j], x[2][j], x[3][j]))
     #print ("Questions: ",len(instances), " pairs: ", len(ans))
     return (ans, batches, candidate_answer_length)
 
 
 class SentenceMatchDataStream(object):
     def __init__(self, inpath,
-                 isShuffle=False, isLoop=False, isSort=True):
+                 isShuffle=False, isLoop=False, isSort=True, zero_pad = False):
 
         self.batch_as_len = []
         self.batch_question_count = []
         self.candidate_answer_length = []
         self.real_candidate_answer_length = []
 
-        instances, r, self.candidate_answer_length = wikiQaGenerate(inpath,  is_training=isShuffle)
+        instances, r, self.candidate_answer_length = wikiQaGenerate(inpath,  is_training=isShuffle,zero_pad=zero_pad)
         if isShuffle == True:
             batch_spans = r[0]
             self.batch_question_count = r[1]
@@ -187,20 +219,27 @@ class SentenceMatchDataStream(object):
 
         self.num_instances = len(instances)
         self.batches = []
+        max_answer_len = 0
         for batch_index, (batch_start, batch_end) in enumerate(batch_spans):
             label_id_batch = []
             input_vector_batch = []
+            mask_batch = []
 
             for i in range(batch_start, batch_end):
-                (quesion_id, input_vector, label_id) = instances[i]
+                (quesion_id, input_vector, label_id, mask) = instances[i]
                 label_id_batch.append(label_id)
                 input_vector_batch.append(input_vector)
+                mask_batch.append(mask)
 
+            if len (label_id_batch) > max_answer_len:
+                max_answer_len = len(label_id_batch)
             label_id_batch = np.array(label_id_batch)
             input_vector_batch = np.array(input_vector_batch)
+            mask_batch = np.array(mask_batch)
 
-            self.batches.append((label_id_batch, input_vector_batch))
+            self.batches.append((label_id_batch, input_vector_batch, mask_batch))
 
+        print ("max_answer_len", max_answer_len) #121 MQ2008
         instances = None
         self.num_batch = len(self.batches)
         self.index_array = np.arange(self.num_batch)

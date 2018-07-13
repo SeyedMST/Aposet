@@ -20,12 +20,13 @@ class SentenceMatchModelGraph(object):
                  , prediction_mode = 'list_wise'
                  ,loss_type = 'poset_net'
                  , pos_avg = True,
-                 q_count=2, dropout_rate = 0.1):
+                 q_count=2, dropout_rate = 0.1, max_answer_size = 130):
 
         # ======word representation layer======
 
         self.truth = get_place_holder (q_count, tf.float32, [None])#q_count*[tf.placeholder(tf.float32, [None])] # [batch_size]
         self.input_vector = get_place_holder (q_count, tf.float32, [None, None])
+        self.mask = get_place_holder(q_count, tf.float32, [None])
         loss_list = []
         score_list = []
         with tf.variable_scope ('salamzendegi'):
@@ -82,6 +83,12 @@ class SentenceMatchModelGraph(object):
                             self.mask12 = tf.minimum(gold, 1.0)
                             self.mask1 = self.mask12 - self.mask2
                             self.mask0 = self.mask01 - self.mask1
+
+                            # self.mask2 = tf.multiply(self.mask, self.mask2)
+                            # self.mask01 = tf.multiply(self.mask, self.mask01)
+                            # self.mask1 = tf.multiply(self.mask, self.mask1)
+                            # self.mask0 = tf.multiply(self.mask, self.mask0)
+
                             self.fi, pos_cnt = self.poset_loss(logits,self.mask2, self.mask01)
                             self.fi1, pos_cnt1 = self.poset_loss(logits,self.mask1, self.mask0)
                             fi = tf.add(self.fi, self.fi1)
@@ -89,6 +96,23 @@ class SentenceMatchModelGraph(object):
                             #fi, pos_cnt = self.poset_loss(logits,gold, 1-gold)
                             if pos_avg == True:
                                 fi = tf.divide(fi, pos_cnt)
+                            loss_list.append(fi)
+                        elif loss_type == 'list_mle':
+                            pos_mask = np.zeros(max_answer_size, np.float32)
+                            neg_mask = np.ones(max_answer_size, np.float32)
+
+                            for j in range (max_answer_size):
+                                pos_mask [j] = 1.0
+                                neg_mask [j] = 0.0
+                                pos_mask_ten = tf.multiply(pos_mask, self.mask[i])
+                                neg_mask_ten = tf.multiply(neg_mask, self.mask[i])
+                                my_fi, pos_cnt = self.poset_loss(logits, pos_mask_ten, neg_mask_ten)
+                                pos_mask [j] = 0.0
+                                if j == 0:
+                                    fi = my_fi
+                                else:
+                                    fi = tf.add(fi, my_fi)
+                            #loss_list.append(tf.divide(fi, tf.reduce_sum(self.mask[i])))
                             loss_list.append(fi)
 
 
@@ -174,6 +198,16 @@ class SentenceMatchModelGraph(object):
     def del_score(self):
         del self.__score
 
+
+    def get_mask(self):
+        return self.__mask
+
+    def set_mask(self, value):
+        self.__mask = value
+
+    def del_mask(self):
+        del self.__mask
+
     def get_input_vector(self):
         return self.__input_vector
 
@@ -249,6 +283,7 @@ class SentenceMatchModelGraph(object):
     lr_rate = property(get_lr_rate, set_lr_rate, del_lr_rate, "lr_rate's docstring")
     score = property(get_score, set_score, del_score, "asdfasdfa")
     input_vector = property(get_input_vector, set_input_vector, del_input_vector, "asdfasdfa")
+    mask = property(get_mask, set_mask, del_mask, "asdfasdfa")
 
 
     
