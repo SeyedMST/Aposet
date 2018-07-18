@@ -18,14 +18,14 @@
       <file leaf-file-name="SentenceMatchTrainer.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/SentenceMatchTrainer.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="54">
-              <caret line="219" column="1" lean-forward="false" selection-start-line="219" selection-start-column="1" selection-end-line="219" selection-end-column="1" />
+            <state relative-caret-position="141">
+              <caret line="248" column="29" lean-forward="true" selection-start-line="248" selection-start-column="29" selection-end-line="248" selection-end-column="29" />
               <folding>
                 <element signature="e#1126#1181#0" expanded="false" />
                 <element signature="e#1341#1396#0" expanded="false" />
-                <element signature="e#16979#16998#0" expanded="false" />
-                <element signature="e#17777#17814#0" expanded="false" />
-                <element signature="e#18894#18961#0" expanded="false" />
+                <element signature="e#16996#17015#0" expanded="false" />
+                <element signature="e#17794#17831#0" expanded="false" />
+                <element signature="e#18911#18978#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -277,9 +277,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -338,9 +338,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -399,9 +399,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -450,9 +450,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -485,9 +485,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -520,9 +520,9 @@
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -597,14 +597,14 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/SentenceMatchTrainer.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="54">
-          <caret line="219" column="1" lean-forward="false" selection-start-line="219" selection-start-column="1" selection-end-line="219" selection-end-column="1" />
+        <state relative-caret-position="141">
+          <caret line="248" column="29" lean-forward="true" selection-start-line="248" selection-start-column="29" selection-end-line="248" selection-end-column="29" />
           <folding>
             <element signature="e#1126#1181#0" expanded="false" />
             <element signature="e#1341#1396#0" expanded="false" />
-            <element signature="e#16979#16998#0" expanded="false" />
-            <element signature="e#17777#17814#0" expanded="false" />
-            <element signature="e#18894#18961#0" expanded="false" />
+            <element signature="e#16996#17015#0" expanded="false" />
+            <element signature="e#17794#17831#0" expanded="false" />
+            <element signature="e#18911#18978#0" expanded="false" />
           </folding>
         </state>
       </provider>

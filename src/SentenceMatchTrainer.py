@@ -253,9 +253,9 @@ def main(_):
 
     namespace_utils.save_namespace(FLAGS, path_prefix + ".config.json")
     output_res_file = open('../result/' + FLAGS.run_id, 'wt')
-    output_res_file.write(str(FLAGS) + '\n')
-    print (str(FLAGS))
     while (Get_Next_box_size(FLAGS.start_batch) == True):
+        output_res_file.write('Q'+str(FLAGS) + '\n')
+        print ('Q'+str (FLAGS))
         train_path = FLAGS.train_path
         dev_path = FLAGS.dev_path
         test_path = FLAGS.test_path
