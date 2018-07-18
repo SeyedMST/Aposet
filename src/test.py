@@ -32,27 +32,48 @@ loss = tf.multiply(jp, p)
 #                               )
 
 
-with tf.Session() as sess:
-    initializer = tf.global_variables_initializer()
-    sess.run(initializer)
+# with tf.Session() as sess:
+#     initializer = tf.global_variables_initializer()
+#     sess.run(initializer)
+#
+#     # result = []
+#     # result.append(tf.while_loop(condition, body, [x]))
+#     # result = tf.concat(0, result)
+#     #result = tf.ceil(g1)
+#
+#     _truth = []
+#     _input_vector = []
+#     for i in range(1):
+#         _truth.append(np.array([10.0,30.0,-8.0,4.0]))
+#         _input_vector.append(np.array([0,1,2,1]))
+#
+#     # print (_truth)
+#     feed_dict = {
+#         p0: tuple(_truth),
+#         q0: tuple(_input_vector),
+#     }
+#     loss_value = sess.run([loss], feed_dict=feed_dict)
+#
+#     print (loss_value)
+#     #print(p.eval())
 
-    # result = []
-    # result.append(tf.while_loop(condition, body, [x]))
-    # result = tf.concat(0, result)
-    #result = tf.ceil(g1)
 
-    _truth = []
-    _input_vector = []
-    for i in range(1):
-        _truth.append(np.array([10.0,30.0,-8.0,4.0]))
-        _input_vector.append(np.array([0,1,2,1]))
+def dcg_at_k(r, k, method):
+    r = np.asfarray(r)[:k]
+    print (r)
+    print (r.size)
+    if r.size:
+        if method == 0:
+            return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
+        elif method == 1:
+            return np.sum(r / np.log2(np.arange(2, r.size + 2)))
+        else:
+            raise ValueError('method must be 0 or 1.')
+    print ("hi")
+    return 0.
 
-    # print (_truth)
-    feed_dict = {
-        p0: tuple(_truth),
-        q0: tuple(_input_vector),
-    }
-    loss_value = sess.run([loss], feed_dict=feed_dict)
-
-    print (loss_value)
-    #print(p.eval())
+r = [2, 3, 0, 1, 1, 1, 1]
+x = np.zeros(10)
+print (x)
+print(dcg_at_k(sorted(r, reverse=True), 1, 1))
+print (dcg_at_k(r, 1, 1))

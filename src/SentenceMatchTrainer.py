@@ -49,8 +49,7 @@ def evaluate(dataStream, valid_graph, sess, is_ndcg,
     #                           ,first_on_best_model)
 
     if is_ndcg == True:
-        return ndcg_k(scores, labels, dataStream.get_candidate_answer_length(), k=top_k, method=1) \
-        , ndcg_k(scores, labels, dataStream.get_candidate_answer_length(), k=top_k, method=0)
+        return ndcg_k(scores, labels, dataStream.get_candidate_answer_length(), k=top_k, method=1)
     else:
         return MAP_MRR(scores, labels, dataStream.get_candidate_answer_length(), flag_valid
                                ,first_on_best_model)
@@ -135,7 +134,7 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
 
     my_map = c_1_j/len(candidate_answer_length)
     my_mrr = c_2_j/len(candidate_answer_length)
-    return my_map, my_mrr
+    return my_map#, my_mrr
     # if flag_valid == False and first_on_best_model == False:
     #     return (my_map,my_mrr)
     # else:
@@ -185,15 +184,16 @@ def Get_Next_box_size (index):
                                                                         # map10 same map9 randseed:123
                                                                         # map11 T/sum(T) for kl
                                                                         #map2- config ro taft bezan :) [listnet cross, T/sum(T)]
-                                                                        #map13 hamoon map2 ba iter bishtar.
+                                                                        #map13 hamoon map2- ba iter bishtar. [cross, T/sum(T)]
                                                                         #map14 map13 ba question count 4 (behtare vali dar kol badtare baraie moghaiese)
-                                                                        #ndcg5 map13
-            # map15 [cross, softmax ->which used in listnet paper]
+                                                                        ##ndcg5 map13
+            #map15 [cross, softmax ->which used in listnet paper]
             #ndcg6 [crosssoft, listmle, poset_net]
             #map18 [cross, pos_avg=True, pos_avg=False]
 
 
-    list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
+
+    #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
@@ -204,6 +204,11 @@ def Get_Next_box_size (index):
 
 
     #list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
+
+    list = ['1', '1', '1','1' ,'2', '2', '2','2' ,'3', '3', '3','3' ,'4', '4', '4','4' ,'5', '5', '5','5']
+        #ndcg8 [list_net, poset_net (True), poset_net (False), list_mle] is_shuffle True
+        #ncdg9 ndcg8 is_shuffle False
+
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
     #qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
@@ -211,28 +216,34 @@ def Get_Next_box_size (index):
     FLAGS.train_path = '../data/' +qa_path +'train.txt'
     FLAGS.dev_path= '../data/' + qa_path +'vali.txt'
     FLAGS.test_path= '../data/'+ qa_path +'test.txt'
-    FLAGS.prediction_mode = 'list_wise'
-    FLAGS.iter_count = 30
-    FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = False
-    FLAGS.loss_type = 'list_mle'
-    #FLAGS.pos_avg = False
-    # if index%3 == 0:
-    #     FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
-    # if index%3 ==1:
-    #     FLAGS.loss_type = 'poset_net'
-    #     FLAGS.pos_avg = True
-    # if index%3 == 2:
-    #     FLAGS.loss_type = 'poset_net'
-    #     FLAGS.pos_avg = False
 
+    FLAGS.prediction_mode = 'list_wise'
+    if FLAGS.is_shuffle == True:
+        FLAGS.iter_count = 50
+    else:
+        FLAGS.iter_count = 10
+    FLAGS.max_epochs = 50
+    FLAGS.is_ndcg = True
+    if index%3 == 0:
+        FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
+    if index%3 ==1:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = True
+    if index%3 == 2:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = False
+    if index%3 == 3:
+        FLAGS.loss_type = 'list_mle'
     return True
 
 
 def main(_):
 
-    FLAGS.run_id = 'map17'
 
+    if FLAGS.is_shuffle == 'True':
+        FLAGS.is_shuffle = True
+    else:
+        FLAGS.is_shuffle = False
     print ('Configuration')
 
     log_dir = FLAGS.model_dir
@@ -242,6 +253,8 @@ def main(_):
 
     namespace_utils.save_namespace(FLAGS, path_prefix + ".config.json")
     output_res_file = open('../result/' + FLAGS.run_id, 'wt')
+    output_res_file.write(str(FLAGS) + '\n')
+    print (str(FLAGS))
     while (Get_Next_box_size(FLAGS.start_batch) == True):
         train_path = FLAGS.train_path
         dev_path = FLAGS.dev_path
@@ -253,14 +266,14 @@ def main(_):
         if FLAGS.prediction_mode == 'list_wise' and FLAGS.loss_type == 'list_mle':
             zero_pad = True
 
-        trainDataStream = SentenceMatchDataStream(train_path, isShuffle=True, isLoop=True, isSort=True, zero_pad=zero_pad)
+        trainDataStream = SentenceMatchDataStream(train_path, is_training= True, isShuffle=FLAGS.is_shuffle, isLoop=True, isSort=True, zero_pad=zero_pad, is_ndcg = FLAGS.is_ndcg)
                                                     #isShuggle must be true because it dtermines we are training or not.
 
         #train_testDataStream = SentenceMatchDataStream(train_path, isShuffle=False, isLoop=True, isSort=True)
 
-        testDataStream = SentenceMatchDataStream(test_path, isShuffle=False, isLoop=True, isSort=True)
+        testDataStream = SentenceMatchDataStream(test_path, is_training=False, isShuffle=False, isLoop=True, isSort=True, is_ndcg = FLAGS.is_ndcg)
 
-        devDataStream = SentenceMatchDataStream(dev_path, isShuffle=False, isLoop=True, isSort=True)
+        devDataStream = SentenceMatchDataStream(dev_path, is_training= False, isShuffle=False, isLoop=True, isSort=True, is_ndcg = FLAGS.is_ndcg)
 
         print('Number of instances in trainDataStream: {}'.format(trainDataStream.get_num_instance()))
         print('Number of instances in devDataStream: {}'.format(devDataStream.get_num_instance()))
@@ -272,9 +285,9 @@ def main(_):
         sys.stdout.flush()
         output_res_index = 1
         # best_test_acc = 0
-        max_test_ndcg = 0
-        max_valid = 0
-        max_test = 0
+        max_test_ndcg = np.zeros(10)
+        max_valid = np.zeros(10)
+        max_test = np.zeros(10)
         # max_dev_ndcg = 0
         while output_res_index <= FLAGS.iter_count:
             # st_cuda = ''
@@ -322,8 +335,8 @@ def main(_):
                     vars_[var.name.split(":")[0]] = var
                 saver = tf.train.Saver(vars_)
 
-                max_valid_iter = 0
-                max_test_ndcg_iter = 0
+                max_valid_iter = np.zeros(10)
+                max_test_ndcg_iter = np.zeros(10)
                 with tf.Session() as sess:
                     # tf.set_random_seed(123)
                     # np.random.seed(123)
@@ -369,31 +382,36 @@ def main(_):
                         if (step+1) % epoch_size == 0 or (step + 1) == max_steps:
                             if (step+1) == max_steps:
                                 print(total_loss)
-                            duration = time.time() - start_time
-                            start_time = time.time()
-                            total_loss = 0.0
+                            # duration = time.time() - start_time
+                            # start_time = time.time()
+                            # total_loss = 0.0
 
-                            my_map, my_mrr = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg)
-                            v_map = my_map
-                            if v_map > max_valid:
-                                max_valid = v_map
-                            flag_valid = False
-                            if my_map > max_valid_iter:
-                                max_valid_iter = my_map
-                                flag_valid = True
-                            my_map, my_mrr = evaluate(testDataStream, valid_graph, sess, is_ndcg=FLAGS.is_ndcg,
-                                                      flag_valid=flag_valid)
-                            if my_map > max_test:
-                                max_test = my_map
-                            if flag_valid == True:
-                                if my_map > max_test_ndcg and FLAGS.store_best == True:
-                                    best_test_acc = my_map
-                                    saver.save(sess, best_path)
-                                if my_map > max_test_ndcg:
-                                    max_test_ndcg = my_map
-                                if my_map > max_test_ndcg_iter:
-                                    max_test_ndcg_iter = my_map
-                            #print ("{} - {}".format(v_map, my_map))
+                            for ndcg_ind in range (10):
+                                v_map = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg,top_k=ndcg_ind+1)
+                                if v_map > max_valid[ndcg_ind]:
+                                    max_valid[ndcg_ind] = v_map
+                                flag_valid = False
+                                if v_map > max_valid_iter[ndcg_ind]:
+                                    max_valid_iter[ndcg_ind] = v_map
+                                    flag_valid = True
+                                te_map = evaluate(testDataStream, valid_graph, sess, is_ndcg=FLAGS.is_ndcg,
+                                                          flag_valid=flag_valid, top_k=ndcg_ind+1)
+                                if te_map > max_test[ndcg_ind]:
+                                    max_test[ndcg_ind] = te_map
+                                if flag_valid == True:
+                                    # if te_map > max_test_ndcg[ndcg_ind] and FLAGS.store_best == True:
+                                    #     #best_test_acc = my_map
+                                    #     saver.save(sess, best_path)
+                                    # if te_map > max_test_ndcg[ndcg_ind]:
+                                    #     max_test_ndcg[ndcg_ind] = te_map
+                                    # if te_map > max_test_ndcg_iter[ndcg_ind]:
+                                    #     max_test_ndcg_iter[ndcg_ind] = te_map
+                                    max_test_ndcg_iter [ndcg_ind] = te_map
+                                #print ("{} - {}".format(v_map, my_map))
+
+                    for ndcg_ind in range (10):
+                        if max_test_ndcg_iter [ndcg_ind] > max_test_ndcg [ndcg_ind]:
+                            max_test_ndcg [ndcg_ind] = max_test_ndcg_iter [ndcg_ind]
 
             #print (total_loss)
             print ("{}-{}: {}".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
@@ -402,7 +420,7 @@ def main(_):
 
 
 
-        print ("{}-{}: {}-{}-{}".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))
+        print ("*{}-{}: {}-{}-{}".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))
         output_res_file.write("{}-{}: {}-{}-{}\n".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))
         FLAGS.start_batch += FLAGS.step_batch
 
@@ -425,6 +443,8 @@ if __name__ == '__main__':
     parser.add_argument('--step_batch', type=int, default=1, help='Maximum epochs for training.')
 
     parser.add_argument('--is_ndcg',default=False, type= bool, help='do we have cuda visible devices?')
+    parser.add_argument('--is_shuffle',default='True', help='do we have cuda visible devices?')
+
 
     parser.add_argument('--pos_avg',default=True, type= bool, help='do we have cuda visible devices?')
     parser.add_argument('--cross_validate',default=True, type= bool, help='do we have cuda visible devices?')
@@ -447,5 +467,6 @@ if __name__ == '__main__':
     #     print("CUDA_VISIBLE_DEVICES " + os.environ['CUDA_VISIBLE_DEVICES'])
     sys.stdout.flush()
     FLAGS, unparsed = parser.parse_known_args()
+
     tf.app.run(main=main, argv=[sys.argv[0]] + unparsed)
 

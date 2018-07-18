@@ -52,7 +52,7 @@ def make_batches_as (instances, is_training, batch_size=100000, max_answer_size=
     #    print ("smaller than count ", smaller_than_count)
     return (ans, question_count, ans_len)
 
-def wikiQaGenerate(filename, is_training, zero_pad, zero_pad_max = 130):
+def wikiQaGenerate(filename, is_training, is_ndcg, zero_pad, zero_pad_max = 122):
     data = open(filename, 'rt')
     question_dic = {}
     question_count = 0 #wiki 2,118
@@ -67,15 +67,8 @@ def wikiQaGenerate(filename, is_training, zero_pad, zero_pad_max = 130):
         #if line.startswith('-'): continue
         item = re.split(" ", line)
         label = int (item[0])
-        # if label == 3:
-        #     label = 1
-        # if label == 4:
-        #     label = 1
-        # if label == 1:
-        #     label = 0
 
-
-        if label == 2:
+        if is_ndcg == False and label == 2:
             label = 1
 
         question = str (re.split(":", item [1])[1])
@@ -199,16 +192,16 @@ def wikiQaGenerate(filename, is_training, zero_pad, zero_pad_max = 130):
 
 
 class SentenceMatchDataStream(object):
-    def __init__(self, inpath,
-                 isShuffle=False, isLoop=False, isSort=True, zero_pad = False):
+    def __init__(self, inpath, is_training,
+                 isShuffle=False ,isLoop=False, isSort=True, zero_pad = False, is_ndcg = False):
 
         self.batch_as_len = []
         self.batch_question_count = []
         self.candidate_answer_length = []
         self.real_candidate_answer_length = []
 
-        instances, r, self.candidate_answer_length = wikiQaGenerate(inpath,  is_training=isShuffle,zero_pad=zero_pad)
-        if isShuffle == True:
+        instances, r, self.candidate_answer_length = wikiQaGenerate(inpath, is_ndcg = is_ndcg,  is_training=is_training,zero_pad=zero_pad)
+        if is_training == True:
             batch_spans = r[0]
             self.batch_question_count = r[1]
             self.batch_as_len = r[2]
