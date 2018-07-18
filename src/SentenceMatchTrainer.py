@@ -219,20 +219,20 @@ def Get_Next_box_size (index):
 
     FLAGS.prediction_mode = 'list_wise'
     if FLAGS.is_shuffle == True:
-        FLAGS.iter_count = 50
+        FLAGS.iter_count = 40
     else:
         FLAGS.iter_count = 10
     FLAGS.max_epochs = 50
     FLAGS.is_ndcg = True
-    if index%3 == 0:
+    if index%4 == 0:
         FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
-    if index%3 ==1:
+    if index%4 ==1:
         FLAGS.loss_type = 'poset_net'
         FLAGS.pos_avg = True
-    if index%3 == 2:
+    if index%4 == 2:
         FLAGS.loss_type = 'poset_net'
         FLAGS.pos_avg = False
-    if index%3 == 3:
+    if index%4 == 3:
         FLAGS.loss_type = 'list_mle'
     return True
 
