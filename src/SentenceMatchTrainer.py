@@ -193,7 +193,7 @@ def Get_Next_box_size (index):
 
 
 
-    #list = ['1', '2', '3', '4', '5'] #ndcg2 [list-netcross entropy]
+    list = ['1', '2', '3', '4', '5']    #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
@@ -201,13 +201,15 @@ def Get_Next_box_size (index):
 
                                         #ndcg7 list_mle
                                         #map17 list_mle
+                                        #10 [list_net kl-div T/sum(T) 2->1]
+                                        #map20 [list_net paper cross entropy]
 
 
     #list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
 
-    list = ['1', '1', '1','1' ,'2', '2', '2','2' ,'3', '3', '3','3' ,'4', '4', '4','4' ,'5', '5', '5','5']
-        #ndcg8 [list_net, poset_net (True), poset_net (False), list_mle] is_shuffle True
-        #ncdg9 ndcg8 is_shuffle False
+    #list = ['1', '1', '1','1' ,'2', '2', '2','2' ,'3', '3', '3','3' ,'4', '4', '4','4' ,'5', '5', '5','5']
+        #ndcg8 d [list_net, poset_net (True), poset_net (False), list_mle] is_shuffle True
+        #ncdg9 s ndcg8 is_shuffle False
 
     FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
@@ -223,22 +225,22 @@ def Get_Next_box_size (index):
     else:
         FLAGS.iter_count = 10
     FLAGS.max_epochs = 50
-    FLAGS.is_ndcg = True
-    if index%4 == 0:
-        FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
-    if index%4 ==1:
-        FLAGS.loss_type = 'poset_net'
-        FLAGS.pos_avg = True
-    if index%4 == 2:
-        FLAGS.loss_type = 'poset_net'
-        FLAGS.pos_avg = False
-    if index%4 == 3:
-        FLAGS.loss_type = 'list_mle'
+    FLAGS.is_ndcg = False
+    FLAGS.loss_type = 'list_net'
+    # if index%4 == 0:
+    #     FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
+    # if index%4 ==1:
+    #     FLAGS.loss_type = 'poset_net'
+    #     FLAGS.pos_avg = True
+    # if index%4 == 2:
+    #     FLAGS.loss_type = 'poset_net'
+    #     FLAGS.pos_avg = False
+    # if index%4 == 3:
+    #     FLAGS.loss_type = 'list_mle'
     return True
 
 
 def main(_):
-
 
     if FLAGS.is_shuffle == 'True':
         FLAGS.is_shuffle = True
@@ -386,7 +388,7 @@ def main(_):
                             # start_time = time.time()
                             # total_loss = 0.0
 
-                            for ndcg_ind in range (10):
+                            for ndcg_ind in range (1):
                                 v_map = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg,top_k=ndcg_ind+1)
                                 if v_map > max_valid[ndcg_ind]:
                                     max_valid[ndcg_ind] = v_map
@@ -409,7 +411,7 @@ def main(_):
                                     max_test_ndcg_iter [ndcg_ind] = te_map
                                 #print ("{} - {}".format(v_map, my_map))
 
-                    for ndcg_ind in range (10):
+                    for ndcg_ind in range (1):
                         if max_test_ndcg_iter [ndcg_ind] > max_test_ndcg [ndcg_ind]:
                             max_test_ndcg [ndcg_ind] = max_test_ndcg_iter [ndcg_ind]
 
@@ -462,7 +464,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning_rate', type=float, default=0.001, help='Learning rate.')
     parser.add_argument('--lambda_l2', type=float, default=0.000001, help='The coefficient of L2 regularizer.')
     parser.add_argument('--suffix', type=str, default='normal', required=False, help='Suffix of the model name.')
-    parser.add_argument('--run_id', default='10' , help = 'run_id')
+    parser.add_argument('--run_id', default='40' , help = 'run_id')
 
     #     print("CUDA_VISIBLE_DEVICES " + os.environ['CUDA_VISIBLE_DEVICES'])
     sys.stdout.flush()

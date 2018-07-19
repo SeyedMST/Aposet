@@ -52,7 +52,7 @@ def make_batches_as (instances, is_training, batch_size=100000, max_answer_size=
     #    print ("smaller than count ", smaller_than_count)
     return (ans, question_count, ans_len)
 
-def wikiQaGenerate(filename, is_training, is_ndcg, zero_pad, zero_pad_max = 122):
+def wikiQaGenerate(filename, is_training, is_ndcg, zero_pad, zero_pad_max = 130):
     data = open(filename, 'rt')
     question_dic = {}
     question_count = 0 #wiki 2,118
