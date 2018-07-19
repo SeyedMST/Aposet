@@ -70,7 +70,7 @@ class SentenceMatchModelGraph(object):
                             #     tf.multiply(soft_truth, tf.log(soft_truth+eps)) - tf.multiply(soft_truth, tf.log(logits))
                             #    ))
                             loss_list.append(tf.reduce_sum(
-                            #    tf.multiply(self.soft_truth, tf.log(self.soft_truth + eps))
+                                tf.multiply(self.soft_truth, tf.log(self.soft_truth + eps))
                                 - tf.multiply(self.soft_truth, tf.log(self.logits))
                                 #-tf.log(self.logits)
                                ))

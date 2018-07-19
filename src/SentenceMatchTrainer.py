@@ -203,6 +203,7 @@ def Get_Next_box_size (index):
                                         #map17 list_mle
                                         #10 [list_net kl-div T/sum(T) 2->1]
                                         #map20 [list_net paper cross entropy]
+                                        #map21 [list_net paper kldiv]
 
 
     #list = ['1', '1', '1', '2', '2', '2', '3', '3', '3', '4', '4', '4', '5', '5', '5'] #map1-
