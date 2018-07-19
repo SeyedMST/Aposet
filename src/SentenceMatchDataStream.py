@@ -62,15 +62,24 @@ def wikiQaGenerate(filename, is_training, is_ndcg, zero_pad, zero_pad_max = 130)
 
     max_val = {}
     min_val = {}
+    cnt2 = 0
+    cnt1 = 0
     for line in data:
         line = line.strip()
         #if line.startswith('-'): continue
         item = re.split(" ", line)
         label = int (item[0])
 
-        if is_ndcg == False and label == 2:
-            label = 1
+        # if label == 1:
+        #     cnt1 += 1
+        #if is_ndcg == False and label == 2:
+        #    label = 1
+            # cnt2+=1
+            # if cnt2 % 10 == 0:
+            #     print (cnt1, cnt2)
 
+        if label == 2:
+            label = 1
         question = str (re.split(":", item [1])[1])
         input_vector = []
         for i in range (2, len (item)):

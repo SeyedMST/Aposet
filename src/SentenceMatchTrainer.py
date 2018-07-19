@@ -52,7 +52,7 @@ def evaluate(dataStream, valid_graph, sess, is_ndcg,
         return ndcg_k(scores, labels, dataStream.get_candidate_answer_length(), k=top_k, method=1)
     else:
         return MAP_MRR(scores, labels, dataStream.get_candidate_answer_length(), flag_valid
-                               ,first_on_best_model)
+                               ,first_on_best_model,map_at=top_k)
 
 
 def dcg_at_k(r, k, method):
@@ -90,7 +90,7 @@ def ndcg_k (logit, gold, candidate_answer_length, k, method=0):
     return c_1 / len (candidate_answer_length)
 
 def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
-            ,first_on_best_model):
+            ,first_on_best_model, map_at = 0):
     c_1_j = 0.0 #map
     c_2_j = 0.0 #mrr
     visited = 0
@@ -108,11 +108,15 @@ def MAP_MRR(logit, gold, candidate_answer_length, flag_valid
         rank_index = list(reversed(rank_index))
         score = 0.0
         count = 0.0
-        for i in range(1, len(prob) + 1):
+        len_p = len(prob) + 1
+        if map_at != 0:
+            if map_at < len (prob):
+                len_p = map_at + 1
+        for i in range(1, len_p):
             if label[rank_index[i - 1]] > eps:
                 count += 1
                 score += count / i
-        for i in range(1, len(prob) + 1):
+        for i in range(1, len(prob) + 1): #MRR
             if label[rank_index[i - 1]] > eps:
                 c_2_j += 1 / float(i)
                 break
@@ -193,7 +197,7 @@ def Get_Next_box_size (index):
 
 
 
-    list = ['1', '2', '3', '4', '5']    #ndcg2 [list-netcross entropy]
+    #list = ['1', '2', '3', '4', '5']    #ndcg2 [list-netcross entropy]
                                         #map2 [list-net cross entropy T/sum(T) instead of softmax] 1->0 2->1
                                         #map3 [list-net kl-div T/sum(T)] 1->0 2->1
                                         #map5 [list-net cross T/sum(T)] 2->1
@@ -212,7 +216,12 @@ def Get_Next_box_size (index):
         #ndcg8 d [list_net, poset_net (True), poset_net (False), list_mle] is_shuffle True
         #ncdg9 s ndcg8 is_shuffle False
 
-    FLAGS.end_batch = len(list) -1
+
+    list = ['1', '2', '3', '4', '5', '1', '2', '3', '4', '5','1', '2', '3', '4', '5','1', '2', '3', '4', '5']
+    #final1-1 [0-9] [mle-net(klt/s)]
+    #final1-2 [10-19] [ptrue-pfalse]
+
+    #FLAGS.end_batch = len(list) -1
     FLAGS.fold = list[index]
     #qa_path = 'MSLR-WEB10K/Fold' + FLAGS.fold + '/'
     qa_path = 'MQ2008/Fold' + FLAGS.fold + '/'
@@ -222,12 +231,22 @@ def Get_Next_box_size (index):
 
     FLAGS.prediction_mode = 'list_wise'
     if FLAGS.is_shuffle == True:
-        FLAGS.iter_count = 40
+        FLAGS.iter_count = 30
     else:
         FLAGS.iter_count = 10
     FLAGS.max_epochs = 50
     FLAGS.is_ndcg = False
-    FLAGS.loss_type = 'list_net'
+    #FLAGS.loss_type = 'list_net'
+    if index < 5:
+        FLAGS.loss_type = 'list_mle'
+    elif index < 10:
+        FLAGS.loss_type = 'list_net'
+    elif index < 15:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = True
+    else:
+        FLAGS.loss_type = 'poset_net'
+        FLAGS.pos_avg = False
     # if index%4 == 0:
     #     FLAGS.loss_type = 'list_net' #'list_net' , 'poset_net'
     # if index%4 ==1:
@@ -389,8 +408,8 @@ def main(_):
                             # start_time = time.time()
                             # total_loss = 0.0
 
-                            for ndcg_ind in range (1):
-                                v_map = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg,top_k=ndcg_ind+1)
+                            for ndcg_ind in range (10):
+                                v_map = evaluate(devDataStream, valid_graph, sess ,is_ndcg=FLAGS.is_ndcg,top_k=ndcg_ind)
                                 if v_map > max_valid[ndcg_ind]:
                                     max_valid[ndcg_ind] = v_map
                                 flag_valid = False
@@ -398,7 +417,7 @@ def main(_):
                                     max_valid_iter[ndcg_ind] = v_map
                                     flag_valid = True
                                 te_map = evaluate(testDataStream, valid_graph, sess, is_ndcg=FLAGS.is_ndcg,
-                                                          flag_valid=flag_valid, top_k=ndcg_ind+1)
+                                                          flag_valid=flag_valid, top_k=ndcg_ind)
                                 if te_map > max_test[ndcg_ind]:
                                     max_test[ndcg_ind] = te_map
                                 if flag_valid == True:
@@ -412,15 +431,13 @@ def main(_):
                                     max_test_ndcg_iter [ndcg_ind] = te_map
                                 #print ("{} - {}".format(v_map, my_map))
 
-                    for ndcg_ind in range (1):
+                    for ndcg_ind in range (10):
                         if max_test_ndcg_iter [ndcg_ind] > max_test_ndcg [ndcg_ind]:
                             max_test_ndcg [ndcg_ind] = max_test_ndcg_iter [ndcg_ind]
 
             #print (total_loss)
             print ("{}-{}: {}".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
             output_res_file.write("{}-{}: {}\n".format(FLAGS.start_batch, output_res_index-1, max_test_ndcg_iter))
-
-
 
 
         print ("*{}-{}: {}-{}-{}".format(FLAGS.fold, FLAGS.start_batch, max_valid, max_test, max_test_ndcg))

@@ -38,10 +38,10 @@ class SentenceMatchModelGraph(object):
                 w = tf.get_variable("w", [input_dim, input_dim],dtype=tf.float32)
                 b = tf.get_variable("b", [input_dim],dtype=tf.float32)
                 v = tf.nn.relu(tf.matmul(v, w) + b)
-                if is_training:
-                    v = tf.nn.dropout(v, (1 - dropout_rate))
-                else:
-                    v = tf.multiply(v, (1 - dropout_rate))
+                # if is_training:
+                #     v = tf.nn.dropout(v, (1 - dropout_rate))
+                # else:
+                #     v = tf.multiply(v, (1 - dropout_rate))
 
                 # w = tf.get_variable("w2", [input_dim, input_dim],dtype=tf.float32)
                 # b = tf.get_variable("b2", [input_dim],dtype=tf.float32)
@@ -64,8 +64,8 @@ class SentenceMatchModelGraph(object):
                     if prediction_mode == 'list_wise':
                         if loss_type == 'list_net':
                             self.logits = tf.nn.softmax(logits)  # [question_count, answer_count]
-                            self.soft_truth = tf.nn.softmax(self.truth[i])
-                            #self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
+                            #self.soft_truth = tf.nn.softmax(self.truth[i])
+                            self.soft_truth = tf.divide(self.truth[i], tf.reduce_sum(self.truth[i]))
                             # loss_list.append(tf.reduce_sum(
                             #     tf.multiply(soft_truth, tf.log(soft_truth+eps)) - tf.multiply(soft_truth, tf.log(logits))
                             #    ))
